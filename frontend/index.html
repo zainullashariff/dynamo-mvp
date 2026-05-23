@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <title>DynaMo Dashboard</title>
+
+  <style>
+
+    body {
+
+      font-family: Arial;
+
+      background: #f4f4f4;
+
+      padding: 20px;
+
+    }
+
+    h1 {
+
+      color: #222;
+
+    }
+
+    .section {
+
+      background: white;
+
+      padding: 20px;
+
+      margin-bottom: 20px;
+
+      border-radius: 10px;
+
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+    }
+
+    table {
+
+      width: 100%;
+
+      border-collapse: collapse;
+
+    }
+
+    th, td {
+
+      padding: 12px;
+
+      border: 1px solid #ddd;
+
+      text-align: left;
+
+    }
+
+    th {
+
+      background: #222;
+
+      color: white;
+
+    }
+
+    .active {
+
+      color: green;
+
+      font-weight: bold;
+
+    }
+
+    .paused {
+
+      color: red;
+
+    }
+
+    button {
+
+      padding: 8px 12px;
+
+      background: #222;
+
+      color: white;
+
+      border: none;
+
+      border-radius: 5px;
+
+      cursor: pointer;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <h1>🚀 DynaMo Control Room</h1>
+
+  <!-- ====================== -->
+  <!-- LINE ITEMS -->
+  <!-- ====================== -->
+
+  <div class="section">
+
+    <h2>Current Line Items</h2>
+
+    <table id="adsTable">
+
+      <thead>
+
+        <tr>
+
+          <th>City</th>
+
+          <th>Creative</th>
+
+          <th>State</th>
+
+          <th>Reason</th>
+
+          <th>Manual Override</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody></tbody>
+
+    </table>
+
+  </div>
+
+  <!-- ====================== -->
+  <!-- AUDIT LOGS -->
+  <!-- ====================== -->
+
+  <div class="section">
+
+    <h2>Audit Logs</h2>
+
+    <table id="logsTable">
+
+      <thead>
+
+        <tr>
+
+          <th>Time</th>
+
+          <th>Message</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody></tbody>
+
+    </table>
+
+  </div>
+
+  <script>
+
+    // ======================
+    // LOAD ADS
+    // ======================
+
+    async function loadAds() {
+
+      const response =
+        await fetch("http://localhost:3000/ads");
+
+      const ads =
+        await response.json();
+
+      const tbody =
+        document.querySelector("#adsTable tbody");
+
+      tbody.innerHTML = "";
+
+      ads.forEach((ad) => {
+
+        tbody.innerHTML += `
+
+          <tr>
+
+            <td>${ad.city}</td>
+
+            <td>${ad.creative}</td>
+
+            <td class="${ad.state}">
+              ${ad.state}
+            </td>
+
+            <td>${ad.reason}</td>
+
+            <td>
+
+              <button onclick="overrideCity('${ad.city}')">
+
+                Override
+
+              </button>
+
+            </td>
+
+          </tr>
+
+        `;
+
+      });
+
+    }
+
+    // ======================
+    // LOAD LOGS
+    // ======================
+
+    async function loadLogs() {
+
+      const response =
+        await fetch("http://localhost:3000/logs");
+
+      const logs =
+        await response.json();
+
+      const tbody =
+        document.querySelector("#logsTable tbody");
+
+      tbody.innerHTML = "";
+
+      logs.forEach((log) => {
+
+        tbody.innerHTML += `
+
+          <tr>
+
+            <td>${log.created_at}</td>
+
+            <td>${log.message}</td>
+
+          </tr>
+
+        `;
+
+      });
+
+    }
+
+    // ======================
+    // MANUAL OVERRIDE
+    // ======================
+
+    async function overrideCity(city) {
+
+      await fetch(
+        `http://localhost:3000/override/${city}`,
+        {
+          method: "POST"
+        }
+      );
+
+      alert(
+        `Manual override enabled for ${city}`
+      );
+
+    }
+
+    // ======================
+    // LOAD EVERYTHING
+    // ======================
+
+    async function loadDashboard() {
+
+      await loadAds();
+
+      await loadLogs();
+
+    }
+
+    // Initial load
+
+    loadDashboard();
+
+    // Refresh every 10 seconds
+
+    setInterval(loadDashboard, 10000);
+
+  </script>
+
+</body>
+
+</html>
