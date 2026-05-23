@@ -103,7 +103,7 @@
   <h1>🚀 DynaMo Control Room</h1>
 
   <!-- ====================== -->
-  <!-- LINE ITEMS -->
+  <!-- CURRENT LINE ITEMS -->
   <!-- ====================== -->
 
   <div class="section">
@@ -166,14 +166,21 @@
 
   <script>
 
-    // ======================
+    // ==========================================
+    // DEPLOYED BACKEND URL
+    // ==========================================
+
+    const API_BASE =
+      "https://dynamo-backend-hnpe.onrender.com";
+
+    // ==========================================
     // LOAD ADS
-    // ======================
+    // ==========================================
 
     async function loadAds() {
 
       const response =
-        await fetch("http://localhost:3000/ads");
+        await fetch(`${API_BASE}/ads`);
 
       const ads =
         await response.json();
@@ -217,14 +224,14 @@
 
     }
 
-    // ======================
+    // ==========================================
     // LOAD LOGS
-    // ======================
+    // ==========================================
 
     async function loadLogs() {
 
       const response =
-        await fetch("http://localhost:3000/logs");
+        await fetch(`${API_BASE}/logs`);
 
       const logs =
         await response.json();
@@ -252,14 +259,14 @@
 
     }
 
-    // ======================
+    // ==========================================
     // MANUAL OVERRIDE
-    // ======================
+    // ==========================================
 
     async function overrideCity(city) {
 
       await fetch(
-        `http://localhost:3000/override/${city}`,
+        `${API_BASE}/override/${city}`,
         {
           method: "POST"
         }
@@ -269,11 +276,13 @@
         `Manual override enabled for ${city}`
       );
 
+      loadDashboard();
+
     }
 
-    // ======================
+    // ==========================================
     // LOAD EVERYTHING
-    // ======================
+    // ==========================================
 
     async function loadDashboard() {
 
@@ -287,7 +296,7 @@
 
     loadDashboard();
 
-    // Refresh every 10 seconds
+    // Auto refresh every 10 seconds
 
     setInterval(loadDashboard, 10000);
 
