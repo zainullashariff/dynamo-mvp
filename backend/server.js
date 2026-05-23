@@ -45,7 +45,7 @@ async function runDynamo() {
 
 }
 
-// Run once immediately
+// Run immediately when server starts
 
 runDynamo();
 
@@ -151,13 +151,15 @@ app.post("/override/:city", (req, res) => {
 });
 
 // =========================
-// START SERVER
+// PORT FIX FOR RENDER
 // =========================
 
-app.listen(3000, () => {
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
 
   console.log(
-    "DynaMo server running on http://localhost:3000"
+    `DynaMo server running on port ${PORT}`
   );
 
 });
