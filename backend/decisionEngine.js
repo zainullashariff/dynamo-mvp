@@ -13,7 +13,7 @@ async function updateAds(weather) {
   let reason = "";
 
   // ==========================================
-  // DETERMINE WHICH CREATIVE SHOULD RUN
+  // DETERMINE WHICH CREATIVE SHOULD BE ACTIVE
   // ==========================================
 
   if (weather.condition === "hot") {
@@ -41,7 +41,7 @@ async function updateAds(weather) {
   }
 
   // ==========================================
-  // GET ALL ADS FOR THIS CITY
+  // GET ALL LINE ITEMS FOR CITY
   // ==========================================
 
   db.all(
@@ -72,7 +72,7 @@ async function updateAds(weather) {
         if (row.manual_override === 1) {
 
           console.log(
-            `${city} skipped due to manual override`
+            `${city} skipped because override is active`
           );
 
           return;
@@ -80,7 +80,7 @@ async function updateAds(weather) {
         }
 
         // ==========================================
-        // DECIDE ACTIVE VS PAUSED
+        // DECIDE NEW STATE
         // ==========================================
 
         const newState =
@@ -90,43 +90,43 @@ async function updateAds(weather) {
             : "paused";
 
         // ==========================================
-        // ONLY UPDATE IF STATE CHANGED
+        // UPDATE DATABASE
         // ==========================================
 
-        if (row.state !== newState) {
+        db.run(
 
-          db.run(
+          `
+          UPDATE line_items
+          SET state = ?,
+              reason = ?
+          WHERE id = ?
+          `,
 
-            `
-            UPDATE line_items
-            SET state = ?,
-                reason = ?
-            WHERE id = ?
-            `,
+          [newState, reason, row.id],
 
-            [newState, reason, row.id],
+          function(err) {
 
-            function(err) {
+            if (err) {
 
-              if (err) {
+              console.log(err);
 
-                console.log(err);
-
-                return;
-
-              }
-
-              console.log(
-                `${city} → ${row.creative} is now ${newState}`
-              );
+              return;
 
             }
 
-          );
+            console.log(
+              `${city} → ${row.creative} is now ${newState}`
+            );
 
-          // ==========================================
-          // WRITE AUDIT LOG
-          // ==========================================
+          }
+
+        );
+
+        // ==========================================
+        // WRITE AUDIT LOG ONLY IF STATE CHANGED
+        // ==========================================
+
+        if (row.state !== newState) {
 
           db.run(
 
@@ -139,26 +139,6 @@ async function updateAds(weather) {
             [
               `${row.creative} changed because ${reason.toLowerCase()}`
             ]
-
-          );
-
-        }
-
-        // ==========================================
-        // UPDATE REASON EVEN IF STATE DIDN'T CHANGE
-        // ==========================================
-
-        else {
-
-          db.run(
-
-            `
-            UPDATE line_items
-            SET reason = ?
-            WHERE id = ?
-            `,
-
-            [reason, row.id]
 
           );
 
