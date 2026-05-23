@@ -1,26 +1,34 @@
 const db = require("./database");
 
-// Main decision engine
+// ==========================================
+// MAIN DECISION ENGINE
+// ==========================================
 
-async function updateAds(weatherData) {
+async function updateAds(weather) {
 
-  const city = weatherData.city;
+  const city = weather.city;
 
   let activeCreative = "";
 
-  // =========================
-  // DECIDE WINNING CREATIVE
-  // =========================
+  let reason = "";
 
-  if (weatherData.condition === "rainy") {
+  // ==========================================
+  // DETERMINE WHICH CREATIVE SHOULD RUN
+  // ==========================================
 
-    activeCreative = "Rainy Day Pick Me Up";
+  if (weather.condition === "hot") {
+
+    activeCreative = "Beat the Heat";
+
+    reason = "Weather is hot";
 
   }
 
-  else if (weatherData.condition === "hot") {
+  else if (weather.condition === "rainy") {
 
-    activeCreative = "Beat the Heat";
+    activeCreative = "Rainy Day Pick Me Up";
+
+    reason = "Weather is rainy";
 
   }
 
@@ -28,17 +36,21 @@ async function updateAds(weatherData) {
 
     activeCreative = "Refresh Anytime";
 
+    reason = "Weather is normal";
+
   }
 
-  // =========================
-  // GET ALL ADS FOR CITY
-  // =========================
+  // ==========================================
+  // GET ALL ADS FOR THIS CITY
+  // ==========================================
 
   db.all(
+
     `
     SELECT * FROM line_items
     WHERE city = ?
     `,
+
     [city],
 
     (err, rows) => {
@@ -53,100 +65,101 @@ async function updateAds(weatherData) {
 
       rows.forEach((row) => {
 
-        // =========================
-        // SKIP MANUAL OVERRIDE
-        // =========================
+        // ==========================================
+        // SKIP MANUAL OVERRIDES
+        // ==========================================
 
         if (row.manual_override === 1) {
 
           console.log(
-            `${city} is under manual override`
+            `${city} skipped due to manual override`
           );
 
           return;
 
         }
 
-        // =========================
-        // DECIDE ACTIVE / PAUSED
-        // =========================
+        // ==========================================
+        // DECIDE ACTIVE VS PAUSED
+        // ==========================================
 
         const newState =
+
           row.creative === activeCreative
             ? "active"
             : "paused";
 
-        // =========================
-        // ONLY UPDATE IF CHANGED
-        // =========================
+        // ==========================================
+        // ONLY UPDATE IF STATE CHANGED
+        // ==========================================
 
         if (row.state !== newState) {
 
-          // =========================
-          // UPDATE DATABASE
-          // =========================
-
           db.run(
+
             `
             UPDATE line_items
-            SET
-              state = ?,
-              reason = ?,
-              weather = ?,
-              updated_at = ?
+            SET state = ?,
+                reason = ?
             WHERE id = ?
             `,
-            [
-              newState,
 
-              `Weather is ${weatherData.condition}`,
+            [newState, reason, row.id],
 
-              JSON.stringify(weatherData),
+            function(err) {
 
-              new Date().toISOString(),
+              if (err) {
 
-              row.id
-            ]
+                console.log(err);
+
+                return;
+
+              }
+
+              console.log(
+                `${city} → ${row.creative} is now ${newState}`
+              );
+
+            }
+
           );
 
-          // =========================
-          // CREATE AUDIT LOG
-          // =========================
+          // ==========================================
+          // WRITE AUDIT LOG
+          // ==========================================
 
           db.run(
+
             `
             INSERT INTO audit_logs
-            (
-              city,
-              creative,
-              old_state,
-              new_state,
-              message,
-              created_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
+            (message)
+            VALUES (?)
             `,
+
             [
-              city,
-
-              row.creative,
-
-              row.state,
-
-              newState,
-
-              `${row.creative} changed because weather is ${weatherData.condition}`,
-
-              new Date().toISOString()
+              `${row.creative} changed because ${reason.toLowerCase()}`
             ]
+
           );
 
-          // =========================
-          // CLEAN TERMINAL LOG
-          // =========================
+        }
 
-          console.log(
-            `${city} → ${row.creative} is now ${newState}`
+        // ==========================================
+        // UPDATE REASON EVEN IF STATE DIDN'T CHANGE
+        // ==========================================
+
+        else {
+
+          db.run(
+
+            `
+            UPDATE line_items
+            SET reason = ?
+            WHERE id = ?
+            `,
+
+            [reason, row.id]
+
           );
 
         }
@@ -159,6 +172,12 @@ async function updateAds(weatherData) {
 
 }
 
+// ==========================================
+// EXPORT FUNCTION
+// ==========================================
+
 module.exports = {
+
   updateAds
+
 };
