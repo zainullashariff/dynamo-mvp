@@ -10,6 +10,10 @@ const { updateAds } = require("./decisionEngine");
 
 const app = express();
 
+app.get("/", (req, res) => {
+  res.send("DynaMo backend is running");
+});
+
 app.use(cors());
 
 app.use(express.json());
