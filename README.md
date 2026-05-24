@@ -1,48 +1,42 @@
 # DynaMo MVP
 
-DynaMo is a small MVP I built for the YOptima AI-Forward Product Manager assignment.
+DynaMo is a lightweight MVP I built for the YOptima AI-Forward Product Manager assignment.
 
-The idea is simple:
-different ad creatives automatically activate depending on the weather in different cities.
+The idea behind the project is simple:
 
-The system checks live weather data and updates campaign states in real time while also showing operators:
-- what is active
-- what changed
-- why it changed
+Different ad creatives automatically activate depending on live weather conditions in different cities.
 
-I focused more on making the system understandable and reliable than making the UI visually polished.
+Instead of marketers manually switching campaigns every time the weather changes, the system updates campaign states automatically in real time.
+
+The MVP currently supports:
+
+- Weather-triggered campaign switching
+- Active/paused line item states
+- Audit logs
+- Manual overrides
+- A lightweight operational dashboard
+
+The goal was not frontend polish.
+
+I focused much more on:
+- Operational visibility
+- Explainability
+- Reliability
+- Trust in automation behavior
 
 ---
 
-# Live Links
+# Cities Included
 
-Frontend Dashboard:
-https://cheerful-biscuit-697d20.netlify.app/
-
-Backend API:
-https://dynamo-backend-hnpe.onrender.com
-
-GitHub Repo:
-https://github.com/zainullashariff/dynamo-mvp
-
----
-
-# What The MVP Does
-
-The app currently supports:
-- weather-based campaign switching
-- active/paused line item states
-- audit logs
-- manual overrides
-- a simple live dashboard
-
-Cities included:
 - Mumbai
 - Delhi
 - Bangalore
 - Chennai
 
-Business logic:
+---
+
+# Campaign Logic
+
 - Hot weather → activate "Beat the Heat"
 - Rainy weather → activate "Rainy Day Pick Me Up"
 - Normal weather → activate "Refresh Anytime"
@@ -51,23 +45,23 @@ Business logic:
 
 # Stack Used
 
-Frontend:
+## Frontend
 - HTML
 - CSS
 - Vanilla JavaScript
 
-Backend:
+## Backend
 - Node.js
 - Express
 
-Database:
+## Database
 - SQLite
 
-Deployment:
+## Deployment
 - Render
 - Netlify
 
-Weather API:
+## Weather API
 - Open-Meteo
 
 ---
@@ -76,42 +70,70 @@ Weather API:
 
 I intentionally kept the stack lightweight because this was an MVP.
 
-Instead of spending time on authentication, frontend frameworks, or complex infrastructure, I focused on:
-- the automation workflow
-- visibility into decisions
-- explainability
-- reliability
+Instead of spending time on authentication, complex infrastructure, or frontend frameworks, I focused on:
+- Automation workflows
+- State visibility
+- Explainability
+- Operational reliability
 
-I also wanted the dashboard to feel easy to understand for a non-technical operator.
+I also wanted the dashboard to feel understandable for non-technical operators.
 
 ---
 
-# Things I Would Improve Next
+# Key Features
 
-If I had more time, I would probably add:
+## Audit Logs
+
+Every state transition is logged so operators can understand:
+- What changed
+- When it changed
+- Why it changed
+
+---
+
+## Manual Overrides
+
+Operators can temporarily override automation behavior for specific cities when needed.
+
+---
+
+## Lightweight Operational Dashboard
+
+The dashboard shows:
+- Active creatives
+- Paused creatives
+- Recent updates
+- Reasoning behind state changes
+
+---
+
+# Challenges During Development
+
+The main challenge was deployment.
+
+SQLite binaries built locally on Windows caused issues when deploying to Linux on Render, so I had to rebuild dependencies and clear deployment caches before the backend worked correctly.
+
+---
+
+# Future Improvements
+
+If I continued building this further, I would probably add:
 - PostgreSQL instead of SQLite
-- retry/fallback weather APIs
-- better override workflows
-- support for multiple trigger types
-- a more flexible rules engine
-- websocket/live updates
+- Configurable trigger systems
+- Additional external triggers (AQI, sports, traffic)
+- Smarter refresh intervals
+- Websocket/live updates
+- More flexible rule management
 
 ---
 
-# Local Setup
-
-## Backend
-
-```bash
-cd backend
-npm install
-node server.js
-```
+# Live Links
 
 ## Frontend
+https://cheerful-biscuit-697d20.netlify.app/
 
-Open:
-frontend/index.html
+## Backend
+https://dynamo-backend-hnpe.onrender.com/
 
 ---
 
