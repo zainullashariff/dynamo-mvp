@@ -1,10 +1,20 @@
 # DynaMo MVP
 
-Context-aware advertising automation MVP built for the YOptima AI-Forward Product Manager assessment.
+DynaMo is a small MVP I built for the YOptima AI-Forward Product Manager assignment.
+
+The idea is simple:
+different ad creatives automatically activate depending on the weather in different cities.
+
+The system checks live weather data and updates campaign states in real time while also showing operators:
+- what is active
+- what changed
+- why it changed
+
+I focused more on making the system understandable and reliable than making the UI visually polished.
 
 ---
 
-# Live Demo
+# Live Links
 
 Frontend Dashboard:
 https://cheerful-biscuit-697d20.netlify.app/
@@ -12,71 +22,34 @@ https://cheerful-biscuit-697d20.netlify.app/
 Backend API:
 https://dynamo-backend-hnpe.onrender.com
 
-GitHub Repository:
+GitHub Repo:
 https://github.com/zainullashariff/dynamo-mvp
 
 ---
 
-# Problem Statement
+# What The MVP Does
 
-CoolSip runs ads across multiple cities and wants creatives to automatically change based on real-world weather conditions.
+The app currently supports:
+- weather-based campaign switching
+- active/paused line item states
+- audit logs
+- manual overrides
+- a simple live dashboard
 
-This MVP enables:
-- automatic ad activation/deactivation
-- weather-aware creative selection
-- visibility into active campaigns
-- audit logging for trust
-- manual override controls
-
----
-
-# Features
-
-## Weather-Based Automation
-
-The system checks live weather conditions for:
+Cities included:
 - Mumbai
 - Delhi
 - Bangalore
 - Chennai
 
-Business rules:
-- Hot (>=35°C) → "Beat the Heat"
-- Rainy → "Rainy Day Pick Me Up"
-- Normal → "Refresh Anytime"
+Business logic:
+- Hot weather → activate "Beat the Heat"
+- Rainy weather → activate "Rainy Day Pick Me Up"
+- Normal weather → activate "Refresh Anytime"
 
 ---
 
-## Dynamic Line Item Activation
-
-Each city has:
-- 3 creatives
-- active/paused states
-- bid + budget values
-- reasoning metadata
-
-The decision engine automatically activates the correct creative.
-
----
-
-## Audit Logging
-
-Every state transition is written into an audit log so operators can understand:
-- what changed
-- when it changed
-- why it changed
-
----
-
-## Manual Overrides
-
-Operators can manually override automation for any city.
-
-This acts as a safety mechanism for brand-sensitive situations.
-
----
-
-# Tech Stack
+# Stack Used
 
 Frontend:
 - HTML
@@ -91,49 +64,37 @@ Database:
 - SQLite
 
 Deployment:
-- Render (backend)
-- Netlify (frontend)
+- Render
+- Netlify
 
 Weather API:
 - Open-Meteo
 
 ---
 
-# Architecture
+# Why I Built It This Way
 
-Frontend Dashboard
-↓
-Express Backend API
-↓
-Decision Engine
-↓
-SQLite Database
-↓
-Weather API
+I intentionally kept the stack lightweight because this was an MVP.
 
----
+Instead of spending time on authentication, frontend frameworks, or complex infrastructure, I focused on:
+- the automation workflow
+- visibility into decisions
+- explainability
+- reliability
 
-# Design Priorities
-
-The MVP prioritizes:
-1. Trust
-2. Visibility
-3. Simplicity
-4. Fast iteration speed
-
-UI polish was intentionally deprioritized in favor of operational transparency and explainability.
+I also wanted the dashboard to feel easy to understand for a non-technical operator.
 
 ---
 
-# Future Improvements
+# Things I Would Improve Next
 
-- PostgreSQL migration
-- Multi-trigger rule engine
-- Retry + fallback weather providers
-- Trigger prioritization
-- Real-time websocket updates
-- Better override workflows
-- Rule-builder UI
+If I had more time, I would probably add:
+- PostgreSQL instead of SQLite
+- retry/fallback weather APIs
+- better override workflows
+- support for multiple trigger types
+- a more flexible rules engine
+- websocket/live updates
 
 ---
 

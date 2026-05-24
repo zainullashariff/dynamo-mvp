@@ -1,298 +1,153 @@
 # DynaMo MVP — Product & Technical Write-Up
 
-## Problem Understanding
+## Initial Thinking
 
-CoolSip’s core problem is not simply weather detection — it is operational trust in automation.
+At first, this looked like a straightforward “weather-based ad switching” problem.
 
-The company wants advertising creatives to dynamically respond to real-world conditions across multiple cities. However, fully automated campaign systems can create anxiety for operators if changes happen invisibly or unpredictably.
+But while building it, I realized the harder part was actually trust.
 
-Because of this, I designed DynaMo not just as an automation engine, but as a visibility-first operational dashboard that explains:
-- what is running
-- where it is running
+If a system is automatically changing campaigns in different cities, operators need to clearly understand:
+- what changed
 - why it changed
-- when it changed
+- whether they can override it
 
-This guided most product and technical decisions throughout the MVP.
+That influenced most of the decisions I made in the MVP.
 
----
-
-# MVP Scope
-
-The MVP focuses on proving the core automation workflow end-to-end:
-
-1. Pull live weather data
-2. Evaluate business rules
-3. Activate/deactivate creatives
-4. Persist state changes
-5. Surface visibility to operators
-6. Allow manual overrides
-
-I intentionally deprioritized:
-- authentication
-- advanced UI polish
-- multi-user workflows
-- campaign editing interfaces
-- distributed infrastructure
-
-This allowed faster iteration on the highest-risk assumption:
-> Can operators trust automated campaign switching?
+I ended up focusing more on visibility and explainability than frontend polish.
 
 ---
 
-# System Design
+# What I Built
 
-The architecture consists of four primary layers:
+The MVP does a few main things:
 
-## Frontend Dashboard
+1. Pulls live weather data
+2. Evaluates simple business rules
+3. Activates or pauses creatives
+4. Stores updates in a database
+5. Shows everything in a dashboard
+6. Allows manual overrides
 
-The frontend provides:
-- current line item visibility
-- activation states
-- reasoning metadata
-- audit logs
-- manual override controls
-
-I chose a lightweight HTML/CSS/JavaScript frontend to optimize for implementation speed and deployment simplicity.
+The frontend is intentionally simple. I wanted it to feel more like an operational control panel than a marketing website.
 
 ---
 
-## Express Backend
+# Main Product Decisions
 
-The Node.js + Express backend exposes APIs for:
-- fetching line items
-- fetching audit logs
-- manual overrides
-- triggering automation updates
+## Audit Logs
 
-The backend also coordinates:
-- weather ingestion
-- rule evaluation
-- database updates
+One of the first things I added was audit logging.
 
----
+Without logs, automation can feel unpredictable very quickly.
 
-## Decision Engine
-
-The decision engine evaluates weather conditions against business rules.
-
-Example logic:
-- Hot weather → activate “Beat the Heat”
-- Rainy weather → activate “Rainy Day Pick Me Up”
-- Normal weather → activate “Refresh Anytime”
-
-The engine updates:
-- campaign state
-- explanation reason
-- audit logs
-
-I intentionally kept the rule engine simple for the MVP to maximize explainability and reduce debugging complexity.
-
----
-
-## SQLite Database
-
-SQLite stores:
-- line items
-- activation state
-- audit logs
-- override status
-
-I selected SQLite because:
-- zero infrastructure overhead
-- fast local iteration
-- extremely lightweight deployment
-- sufficient for MVP scale
-
-For production scale I would migrate to PostgreSQL.
-
----
-
-# Key Product Decisions
-
-## Visibility Over UI Polish
-
-I prioritized operational clarity over advanced visual design.
-
-The core dashboard surfaces:
-- active vs paused creatives
-- explanation reasons
-- audit history
-- override controls
-
-This directly addresses operator trust concerns.
-
----
-
-## Audit Logging
-
-Automation systems create anxiety when changes are invisible.
-
-The audit log provides explainability by recording:
+The logs help answer:
 - what changed
 - when it changed
 - why it changed
 
-This was one of the highest-priority features in the MVP.
+Even in a small MVP, I felt this was important because trust is a major part of automation products.
 
 ---
 
 ## Manual Overrides
 
-Automated systems should always provide human escape hatches.
+I didn’t want the system to feel “fully uncontrollable.”
 
-The override functionality allows operators to temporarily disable automation for specific cities.
+So I added manual overrides for each city.
 
-This becomes especially important during:
-- brand-sensitive moments
-- campaign launches
-- unexpected weather anomalies
-- business exceptions
+That way, operators can pause automation temporarily if needed.
+
+This felt important because real-world campaigns often have exceptions that automation alone shouldn’t control.
 
 ---
 
-## Real Weather Integration
+## Simple Rules
 
-I used the Open-Meteo API because it:
-- requires no authentication
-- has low setup friction
-- supports rapid prototyping
+I intentionally kept the decision engine simple.
 
-This allowed faster iteration during MVP development.
+For example:
+- hot weather → “Beat the Heat”
+- rainy weather → “Rainy Day Pick Me Up”
+- otherwise → “Refresh Anytime”
 
----
-
-# Tradeoffs & Constraints
-
-## Why SQLite Instead of PostgreSQL?
-
-I optimized for MVP speed and simplicity rather than production-grade scalability.
-
-SQLite reduced:
-- deployment complexity
-- infrastructure management
-- operational overhead
-
-For a larger-scale system, PostgreSQL would provide:
-- concurrency support
-- stronger durability
-- better scaling characteristics
+I avoided making the rules too dynamic too early because I wanted the behavior to stay easy to debug and explain.
 
 ---
 
-## Why Polling Instead of Real-Time Streams?
+# Technical Choices
 
-The MVP currently checks weather periodically rather than using streaming updates.
+## Why Node.js?
 
-This simplifies:
-- infrastructure
-- scheduling
-- reliability
+My stronger programming background is actually in Python, but I chose Node.js here because:
+- it simplified frontend/backend integration
+- deployment was straightforward
+- the app itself was relatively lightweight
 
-For production systems I would explore:
-- adaptive polling
-- event-based triggers
-- queue-based architectures
+I also wanted to push myself a bit outside my comfort zone during the assignment.
 
 ---
 
-# Edge Cases Considered
+## Why SQLite?
 
-## Weather API Failure
+I chose SQLite mainly for speed and simplicity.
 
-Current behavior:
-- retain previous campaign state
+For an MVP, it reduced setup overhead significantly and made local iteration fast.
 
-Future improvements:
-- retry logic
-- fallback weather providers
-- stale data alerts
+If this became a larger system, I would move to PostgreSQL pretty quickly.
 
 ---
 
-## Conflicting Triggers
+# Challenges During Development
 
-Future versions may support multiple simultaneous triggers such as:
-- weather
+The biggest technical issue I ran into was deployment.
+
+SQLite binaries built locally on Windows caused issues when deploying to Linux on Render. I had to rebuild dependencies properly and clear deployment caches before the backend worked correctly.
+
+I also spent time refining how state updates and audit logs behaved so the dashboard stayed consistent.
+
+---
+
+# Scaling Thoughts
+
+One thing I thought about was API cost scaling.
+
+If weather checks happen every minute across hundreds of cities, the number of API requests grows very quickly.
+
+For a production version, I would probably:
+- cache weather responses
+- poll less frequently during stable weather
+- group nearby cities
+- use adaptive refresh intervals
+
+That would reduce unnecessary updates and infrastructure cost.
+
+---
+
+# Future Direction
+
+Right now the system is weather-specific.
+
+But I think the more interesting long-term direction would be turning this into a more general trigger engine.
+
+Instead of only weather, the system could eventually support:
 - AQI
-- sports outcomes
 - traffic
+- sports outcomes
 - local events
+- time-of-day triggers
 
-This would require:
-- trigger prioritization
-- weighted rules
-- conflict resolution logic
+At that point, the platform becomes less about weather and more about context-aware campaign automation.
 
 ---
 
-## Operator Trust
+# Final Thoughts
 
-A major operational risk is invisible automation.
+The biggest thing I learned while building this was that automation products are as much about operator confidence as they are about automation itself.
 
-The dashboard, audit logs, and override system were designed specifically to reduce operator anxiety and improve trust.
-
----
-
-# Scaling Considerations
-
-Naively scaling weather polling can become expensive quickly.
-
-Example:
-
-200 cities × polling every minute
-= 288,000 weather requests/day
-
-This creates:
-- unnecessary API cost
-- infrastructure waste
-- redundant updates
-
-A more scalable approach would include:
-- 15-minute refresh windows
-- caching weather results
-- adaptive polling frequency
-- regional grouping
-- change-detection triggers
-
-Stable weather conditions should be checked less frequently than rapidly changing conditions.
-
----
-
-# Future Trigger Abstraction
-
-The current MVP is weather-specific, but the architecture can evolve into a generalized trigger engine.
-
-Instead of hardcoded weather rules:
-
-```javascript
-if temperature > 35
-```
-
-Future systems could support generic triggers:
-
-| Trigger | Operator | Value |
-|---|---|---|
-| weather.temp | > | 35 |
-| aqi | > | 200 |
-| cricket.india_win | == | true |
-| traffic.index | > | 80 |
-
-This would transform DynaMo from a weather automation system into a broader context-aware campaign orchestration platform.
-
----
-
-# Final Reflection
-
-The most important realization during development was that the core product challenge was not weather detection itself.
-
-The real challenge was designing automation that operators could trust.
-
-Because of this, I intentionally prioritized:
+That’s why I prioritized:
 - visibility
-- explainability
-- auditability
-- override controls
+- audit logs
+- overrides
+- simplicity
 
-over advanced UI polish or infrastructure complexity.
-
-The MVP demonstrates the core workflow successfully while leaving clear paths for future scalability and trigger abstraction.
+over building a very polished UI or adding too many features too early.
